@@ -1,135 +1,103 @@
-NASA APOD ETL Pipeline
+ETL Pipeline for NASA APOD Data using Apache Airflow
 
 Overview
 
-This Airflow ETL pipeline extracts data from NASA's Astronomy Picture of the Day (APOD) API, transforms the data, and loads it into a PostgreSQL database. The pipeline ensures that duplicate records are not inserted by checking for existing entries based on the date field.
+This ETL pipeline fetches data from NASA's Astronomy Picture of the Day (APOD) API, transforms it, and stores it in a PostgreSQL database. The pipeline is managed using Apache Airflow and can be deployed on Astronomer.
 
 Features
 
-Extracts daily APOD data from NASA's API.
+Extract: Fetches data from NASA's APOD API.
 
-Transforms data to retain only essential fields.
+Transform: Cleans and formats the data.
 
-Loads data into a PostgreSQL database, avoiding duplicates.
+Load: Stores data in a PostgreSQL database.
 
-Uses Airflow tasks for automation and scheduling.
+Automated Scheduling: Runs daily using Apache Airflow.
+
+Idempotent Storage: Avoids duplicate entries based on the date field.
 
 Prerequisites
 
-Apache Airflow installed and running.
+Docker & Docker Compose
 
-PostgreSQL database configured.
+Apache Airflow (Managed via Astronomer)
 
-Airflow Connections:
+PostgreSQL Database
 
-nasa_api: Configured with NASA API key.
+Astronomer CLI
 
-my_postgres_connection: Configured PostgreSQL connection.
+Installation & Setup
 
-Python packages:
+1. Install Astronomer CLI
 
-pip install apache-airflow apache-airflow-providers-postgres apache-airflow-providers-http psycopg2
+winget install -e --id Astronomer.Astro
 
-Setup Instructions
+2. Initialize an Astronomer Project
 
-1. Configure Airflow Connections
+astro dev init
 
-NASA API Connection (nasa_api)
+3. Start the Local Airflow Instance
 
-Navigate to Airflow UI → Admin → Connections → Create
+astro dev start
 
-Set Connection Id = nasa_api
+4. Stop the Local Airflow Instance
 
-Set Connection Type = HTTP
+astro dev stop
 
-In Extra, add:
+Airflow DAG Breakdown
 
-{"api_key": "your_nasa_api_key"}
+DAG File: etl_pipeline.py
 
-PostgreSQL Connection (my_postgres_connection)
+create_table: Ensures the apod_data table exists in PostgreSQL.
 
-Navigate to Airflow UI → Admin → Connections → Create
+extract_apod: Fetches data from NASA's APOD API.
 
-Set Connection Id = my_postgres_connection
+transform_apod_data: Extracts required fields from the API response.
 
-Set Connection Type = Postgres
+load_data_to_postgres: Inserts transformed data into the PostgreSQL database, ensuring no duplicate entries.
 
-Fill in:
+Airflow Connection Setup
 
-Host: localhost (or your PostgreSQL server IP)
+Ensure you have the following Airflow connections set up:
 
-Schema: Your database name
+PostgreSQL Connection (my_postgres_connection):
 
-Login: Your database username
+Connection ID: my_postgres_connection
 
-Password: Your database password
+Host: <your_db_host>
 
-Port: 5432
+Schema: <your_db_name>
 
-2. Deploy the DAG
+Login: <your_db_user>
 
-Save the pipeline script as etl_pipeline.py in the Airflow DAGs folder (~/airflow/dags/):
+Password: <your_db_password>
 
-mv etl_pipeline.py ~/airflow/dags/
+NASA API Connection (nasa_api):
 
-Restart Airflow services:
+Connection ID: nasa_api
 
-airflow scheduler restart
-airflow webserver restart
+Extra JSON: { "api_key": "your_nasa_api_key" }
 
-Navigate to Airflow UI and enable the DAG etl_pipeline.
+Deploying on Astronomer
 
-Pipeline Structure
+1. Login to Astronomer
 
-1. Create Table (create_table task)
+astro login
 
-Ensures the apod_data table exists in PostgreSQL.
+2. Deploy to Astronomer
 
-Defines schema with a unique date column to prevent duplicates.
+astro deploy
 
-2. Extract APOD Data (extract_apod task)
+Running the DAG
 
-Calls NASA's APOD API to fetch the latest astronomy picture details.
+Navigate to the Airflow UI (http://localhost:8080).
 
-Uses Airflow’s SimpleHttpOperator to extract JSON data.
+Enable and trigger the etl_pipeline DAG.
 
-3. Transform Data (transform_apod_data task)
+Troubleshooting
 
-Extracts essential fields (title, explanation, url, date, media_type).
+Ensure Docker is running.
 
-Ensures missing fields do not cause errors.
+Verify Airflow connections (Admin -> Connections).
 
-4. Load Data into PostgreSQL (load_data_to_postgres task)
-
-Checks if the date already exists in the database.
-
-Inserts new data only if it's not a duplicate.
-
-DAG Workflow
-
-(create_table) → (extract_apod) → (transform_apod_data) → (load_data_to_postgres)
-
-Monitoring and Debugging
-
-Check logs for errors:
-
-airflow tasks logs -d etl_pipeline load_data_to_postgres
-
-Verify database entries:
-
-SELECT * FROM apod_data;
-
-Restart a failed task manually:
-
-airflow tasks run etl_pipeline load_data_to_postgres <dag_run_id>
-
-Future Enhancements
-
-Implement notifications for failures (e.g., via Slack or email).
-
-Extend data storage to cloud-based solutions.
-
-Add error handling for API failures.
-
-This ETL pipeline provides a reliable method for automating NASA APOD data collection and storage. 🚀
-
+Check Airflow logs if a task fails.
