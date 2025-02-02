@@ -1,10 +1,10 @@
-ETL Pipeline for NASA APOD Data using Apache Airflow
+## ETL Pipeline for NASA APOD Data using Apache Airflow
 
-Overview
+# Overview
 
 This ETL pipeline fetches data from NASA's Astronomy Picture of the Day (APOD) API, transforms it, and stores it in a PostgreSQL database. The pipeline is managed using Apache Airflow and can be deployed on Astronomer.
 
-Features
+# Features
 
 Extract: Fetches data from NASA's APOD API.
 
@@ -78,7 +78,7 @@ Connection ID: nasa_api
 
 Extra JSON: { "api_key": "your_nasa_api_key" }
 
-Deploying on Astronomer
+# Deploying on Astronomer
 
 1. Login to Astronomer
 
@@ -88,13 +88,13 @@ astro login
 
 astro deploy
 
-Running the DAG
+# Running the DAG
 
 Navigate to the Airflow UI (http://localhost:8080).
 
 Enable and trigger the etl_pipeline DAG.
 
-Troubleshooting
+# Troubleshooting
 
 Ensure Docker is running.
 
